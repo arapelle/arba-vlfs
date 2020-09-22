@@ -16,7 +16,7 @@ set_build_type_if_undefined()
 
 project(vlfs
         VERSION 0.1.0
-        DESCRIPTION "C++ tools to manipulate virtual filesystem path."
+        DESCRIPTION "C++ tools to manipulate virtual filesystem paths."
         HOMEPAGE_URL "https://github.com/arapelle/vlfs"
         LANGUAGES CXX)
 
