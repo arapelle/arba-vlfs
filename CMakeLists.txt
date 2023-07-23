@@ -61,10 +61,10 @@ install_cpp_library_targets(${PROJECT_NAME}
                             )
 
 # Link targets:
-if(NOT TARGET arba::strn)
-    find_package(strn 0.1.4 REQUIRED CONFIG)
+if(NOT TARGET arba-strn)
+    find_package(arba-strn 0.2.0 REQUIRED CONFIG)
 endif()
-cpp_library_targets_link_libraries(${PROJECT_NAME} PUBLIC arba::strn)
+cpp_library_targets_link_libraries(${PROJECT_NAME} PUBLIC arba-strn)
 
 # Install package
 install_package(${PROJECT_NAME}
