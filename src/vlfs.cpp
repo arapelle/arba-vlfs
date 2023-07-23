@@ -1,7 +1,10 @@
-#include <arba/vlfs/vlfs.hpp> 
+#include <arba/vlfs/vlfs.hpp>
 
+inline namespace arba
+{
 namespace vlfs
 {
+
 virtual_filesystem::virtual_filesystem(std::filesystem::path::string_type vroot_mark)
     : vroot_mark_(std::move(vroot_mark))
 {}
@@ -69,5 +72,7 @@ void virtual_filesystem::convert_to_real_path (std::filesystem::path& path)
         path_string_view subpath(&*subpath_begin_it, subpath_length);
         path = vroot_path / subpath;
     }
+}
+
 }
 }

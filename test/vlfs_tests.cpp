@@ -6,7 +6,7 @@ using namespace strn::literals;
 
 TEST(vlfs_tests, test_constructor_empty)
 {
-    vlfs::virtual_filesystem vlfs;
+    arba::vlfs::virtual_filesystem vlfs;
     ASSERT_FALSE(vlfs.has_virtual_roots());
     ASSERT_EQ(vlfs.virtual_roots().size(), 0);
     ASSERT_EQ(vlfs.virtual_root_mark(), ":/");

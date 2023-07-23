@@ -5,8 +5,11 @@
 #include <string_view>
 #include <string>
 
+inline namespace arba
+{
 namespace vlfs
 {
+
 class virtual_filesystem
 {
 private:
@@ -34,4 +37,6 @@ private:
     virtual_root_map virtual_roots_;
     std::filesystem::path::string_type vroot_mark_;
 };
+
+}
 }
