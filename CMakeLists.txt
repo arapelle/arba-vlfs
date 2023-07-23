@@ -34,7 +34,7 @@ generate_version_macro_header(generated_version_header
 
 ## Headers:
 set(headers
-    include/vlfs/vlfs.hpp
+    include/arba/vlfs/vlfs.hpp
 )
 
 ## Sources:
