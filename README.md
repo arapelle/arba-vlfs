@@ -19,7 +19,7 @@ Binaries:
 - CMake 3.26 or later
 
 Libraries:
-- [strn](https://github.com/arapelle/strn) 0.2.0
+- [arba-strn](https://github.com/arapelle/arba-strn) 0.2.0
 
 Testing Libraries (optional):
 - [Google Test](https://github.com/google/googletest) 1.13 or later  (optional)
@@ -79,7 +79,7 @@ int main()
 }
 ```
 
-## Example - Using *vlfs* in a CMake project
+## Example - Using *arba-vlfs* in a CMake project
 
 See the *basic_cmake_project* example, and more specifically the *CMakeLists.txt* to see how to use *arba-vlfs* in your CMake projects.
 
