@@ -91,43 +91,61 @@ strn::string64 strn_from_iter_len(T iter, std::size_t n)
 }
 }
 
-bool virtual_filesystem::extract_components(path_string_view path, virtual_root_name& vroot, path_string_view& subpath)
+virtual_filesystem::path_components virtual_filesystem::extract_components(path_string_view path_view)
 {
-    std::size_t pos;
-    if (is_virtual_path_(path, pos))
-    {
-        auto path_begin = path.begin();
-        vroot = strn_from_iter_len(path_begin, pos);
-        auto subpath_begin_it = path_begin + pos + virtual_root_marker.length();
-        std::size_t subpath_length = std::distance(subpath_begin_it, path.end());
-        subpath = path_string_view(&*subpath_begin_it, subpath_length);
-        return true;
-    }
+    virtual_filesystem::path_components res;
 
-    return false;
+    if (std::size_t pos; is_virtual_path_(path_view, pos))
+    {
+        auto path_begin = path_view.begin();
+        res.vroot = strn_from_iter_len(path_begin, pos);
+        auto subpath_begin_it = path_begin + pos + virtual_root_marker.length();
+        std::size_t subpath_length = std::distance(subpath_begin_it, path_view.end());
+        res.subpath = path_string_view(&*subpath_begin_it, subpath_length);
+    }
+    else
+        res.subpath = path_view;
+
+    return res;
 }
 
-void virtual_filesystem::convert_to_real_path_(path_string_view path, std::filesystem::path& real_path)
+void virtual_filesystem::convert_to_real_path(std::filesystem::path& real_path)
 {
-    virtual_root_name vroot;
-    path_string_view subpath;
-    if (extract_components(path, vroot, subpath))
+    path_string_view path(real_path.native());
+    if (auto path_comps = extract_components(path); path_comps)
     {
         // if the root name is registered in the virtual filesystem,
         // we get it and convert it to real path:
-        if (auto vroot_iter = virtual_root_map_.find(vroot);
+        if (auto vroot_iter = virtual_root_map_.find(path_comps.vroot);
             vroot_iter != virtual_root_map_.end()) [[likely]]
         {
             std::filesystem::path vroot_path = vroot_iter->second;
             convert_to_real_path(vroot_path);
-            real_path = vroot_path / subpath;
+            real_path = vroot_path / path_comps.subpath;
         }
-        else if (vroot == current_dir_vroot) [[likely]]
+        else if (path_comps.vroot == current_dir_vroot) [[likely]]
         {
-            real_path = std::filesystem::current_path() / subpath;
+            real_path = std::filesystem::current_path() / path_comps.subpath;
         }
-        else
-            real_path.assign(path);
+    }
+}
+
+std::filesystem::path virtual_filesystem::real_path(const path_components& path_comps)
+{
+    if (auto vroot_iter = virtual_root_map_.find(path_comps.vroot);
+        vroot_iter != virtual_root_map_.end()) [[likely]]
+    {
+        std::filesystem::path vroot_path = vroot_iter->second;
+        convert_to_real_path(vroot_path);
+        return vroot_path / path_comps.subpath;
+    }
+    else if (path_comps.vroot == current_dir_vroot) [[likely]]
+    {
+        return std::filesystem::current_path() / path_comps.subpath;
+    }
+    else
+    {
+        return std::filesystem::path(path_comps.subpath);
     }
 }
 
