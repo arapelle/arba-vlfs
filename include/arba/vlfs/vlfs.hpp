@@ -31,19 +31,30 @@ public:
 
 public:
     virtual_filesystem();
+
     inline const virtual_root_map& virtual_map() const { return virtual_root_map_; }
     bool has_virtual_root(virtual_root_name vroot) const;
     void set_virtual_root(virtual_root_name vroot, const std::filesystem::path& root_path);
     void set_program_dir_virtual_root(const std::filesystem::path& program_dir_path);
+
     bool is_virtual_path(path_string_view path);
     inline bool is_virtual_path(const std::filesystem::path& path);
 
-    bool extract_components(path_string_view path, virtual_root_name& vroot, path_string_view& subpath);
-    inline bool extract_components(const std::filesystem::path& path, virtual_root_name& vroot, path_string_view& subpath);
+    struct path_components
+    {
+        virtual_root_name vroot;
+        path_string_view subpath;
 
-    inline void convert_to_real_path(std::filesystem::path& path);
+        inline operator bool() const noexcept { return vroot.not_empty(); }
+    };
+    path_components extract_components(path_string_view path);
+    inline path_components extract_components(const std::filesystem::path& path);
+
+    void convert_to_real_path(std::filesystem::path& path);
     inline std::filesystem::path real_path(path_string_view path);
     inline std::filesystem::path real_path(const std::filesystem::path& path);
+    inline std::filesystem::path real_path(std::filesystem::path&& path);
+    std::filesystem::path real_path(const path_components& path_comps);
 
     /**
      * @brief is_virtual_root_name_valid
@@ -57,7 +68,6 @@ public:
 
 private:
     bool is_virtual_path_(path_string_view path, std::size_t& pos);
-    void convert_to_real_path_(path_string_view path, std::filesystem::path& real_path);
 
 private:
     virtual_root_map virtual_root_map_;
@@ -68,29 +78,29 @@ inline bool virtual_filesystem::is_virtual_path(const std::filesystem::path& pat
     return is_virtual_path(path_string_view(path.native()));
 }
 
-inline bool virtual_filesystem::extract_components(const std::filesystem::path& path, virtual_root_name& vroot,
-                                                   path_string_view& subpath)
+inline virtual_filesystem::path_components virtual_filesystem::extract_components(const std::filesystem::path& path)
 {
-    return extract_components(path_string_view(path.native()), vroot, subpath);
-}
-
-inline void virtual_filesystem::convert_to_real_path(std::filesystem::path& path)
-{
-    convert_to_real_path_(path_string_view(path.native()), path);
+    return extract_components(path_string_view(path.native()));
 }
 
 inline std::filesystem::path virtual_filesystem::real_path(path_string_view path)
 {
-    std::filesystem::path real_path;
-    convert_to_real_path_(path, real_path);
-    if (real_path.empty())
-        return path;
-    return real_path;
+    path_components path_comps = extract_components(path);
+    if (path_comps)
+        return real_path(path_comps);
+    return path;
 }
 
 inline std::filesystem::path virtual_filesystem::real_path(const std::filesystem::path& path)
 {
     return real_path(path_string_view(path.native()));
+}
+
+inline std::filesystem::path virtual_filesystem::real_path(std::filesystem::path&& path)
+{
+    std::filesystem::path real_path(std::move(path));
+    convert_to_real_path(real_path);
+    return real_path;
 }
 
 }

@@ -105,12 +105,23 @@ TEST(vlfs_tests, extract_components)
     std::filesystem::path vpath("RSC:/dir/file.txt");
     ASSERT_TRUE(vfs.is_virtual_path(vpath));
 
-    vlfs::virtual_filesystem::virtual_root_name vroot;
-    vlfs::virtual_filesystem::path_string_view subpath;
-    bool extract_res = vfs.extract_components(vpath, vroot, subpath);
-    ASSERT_TRUE(extract_res);
-    ASSERT_EQ(vroot, "RSC"_s64);
-    ASSERT_EQ(std::filesystem::path(subpath), std::filesystem::path("dir/file.txt"));
+    vlfs::virtual_filesystem::path_components path_comps = vfs.extract_components(vpath);
+    ASSERT_TRUE(static_cast<bool>(path_comps));
+    ASSERT_EQ(path_comps.vroot, "RSC"_s64);
+    ASSERT_EQ(std::filesystem::path(path_comps.subpath), std::filesystem::path("dir/file.txt"));
+}
+
+TEST(vlfs_tests, real_path__path_components)
+{
+    vlfs::virtual_filesystem vfs;
+    vfs.set_virtual_root("VROOT"_s64,  "/tmp");
+    vfs.set_virtual_root("RSC"_s64,    "VROOT:/rsc");
+    vfs.set_virtual_root("IMAGES"_s64, "RSC:/images");
+
+    std::filesystem::path vpath("IMAGES:/file");
+    vlfs::virtual_filesystem::path_components path_comps = vfs.extract_components(vpath);
+    std::filesystem::path path = vfs.real_path(path_comps);
+    ASSERT_EQ(path, "/tmp/rsc/images/file");
 }
 
 int main(int argc, char **argv)
