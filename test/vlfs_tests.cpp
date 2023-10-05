@@ -36,9 +36,12 @@ TEST(vlfs_tests, is_virtual_root_name_valid)
 TEST(vlfs_tests, is_virtual_path__long_path)
 {
     vlfs::virtual_filesystem vfs;
+    ASSERT_TRUE(vfs.is_virtual_path("RD:/dir/file.txt"sv));
     ASSERT_TRUE(vfs.is_virtual_path("RSC:/dir/file.txt"sv));
-    ASSERT_FALSE(vfs.is_virtual_path("RSC:|dir/file.txt"sv)); // wrong virtual root marker
+    ASSERT_TRUE(vfs.is_virtual_path("RSCS_DIR:/file.txt"sv));
     ASSERT_FALSE(vfs.is_virtual_path("RESOURCES:/dir/file.txt"sv)); // too long virtual root name
+    ASSERT_FALSE(vfs.is_virtual_path("RSC:|dir/file.txt"sv)); // wrong virtual root marker
+    ASSERT_FALSE(vfs.is_virtual_path(":/dir/file.txt"sv)); // empty virtual root name
     ASSERT_FALSE(vfs.is_virtual_path("R:/dir/file.txt"sv)); // too short virtual root name
     ASSERT_FALSE(vfs.is_virtual_path("dir/file.txt"sv)); // does not have a virtual root name
 }
@@ -46,9 +49,12 @@ TEST(vlfs_tests, is_virtual_path__long_path)
 TEST(vlfs_tests, is_virtual_path__short_path)
 {
     vlfs::virtual_filesystem vfs;
+    ASSERT_TRUE(vfs.is_virtual_path("RD:/"sv));
     ASSERT_TRUE(vfs.is_virtual_path("RSC:/f"sv));
-    ASSERT_FALSE(vfs.is_virtual_path(":/"sv)); // empty virtual root name
-    ASSERT_FALSE(vfs.is_virtual_path("R:/"sv)); // too short virtual root name
+    ASSERT_TRUE(vfs.is_virtual_path("RSCS_DIR:/"sv));
+    ASSERT_FALSE(vfs.is_virtual_path("RSC:|f"sv)); // wrong virtual root marker
+    ASSERT_FALSE(vfs.is_virtual_path(":/f.txt"sv)); // empty virtual root name
+    ASSERT_FALSE(vfs.is_virtual_path("R:/f.txt"sv)); // too short virtual root name
     ASSERT_FALSE(vfs.is_virtual_path("f.txt"sv)); // does not have a virtual root name
 }
 

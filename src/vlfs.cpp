@@ -61,12 +61,21 @@ bool virtual_filesystem::is_virtual_path(path_string_view path)
 
 bool virtual_filesystem::is_virtual_path_(path_string_view path, std::size_t& pos)
 {
-    std::size_t path_view_length = std::min<std::size_t>(path.length(),
-                                                         strn::string64::max_length()
-                                                             + virtual_root_marker.length());
-    path_string_view bounded_path_view(path.data(), path_view_length);
-    pos = bounded_path_view.find(virtual_root_marker);
-    return pos != std::string::npos && pos >= 2;
+    if (path.length() >= 4) [[likely]]
+    {
+        std::size_t path_view_length = std::min<std::size_t>(path.length() - virtual_root_marker.length(),
+                                                             strn::string64::max_length());
+        path_string_view bounded_path_view(path.data() + virtual_root_marker.length(), path_view_length);
+        pos = bounded_path_view.find(virtual_root_marker);
+        bool res = pos != std::string::npos;
+        pos += virtual_root_marker.length();
+        return res;
+    }
+    else
+    {
+        pos = std::string::npos;
+        return false;
+    }
 }
 
 namespace
