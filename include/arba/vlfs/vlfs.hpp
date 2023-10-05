@@ -25,9 +25,15 @@ public:
     static constexpr path_string_view virtual_root_marker = ":/";
     static_assert(std::is_same_v<std::filesystem::path::value_type, char>);
 #endif
-    static const virtual_root_name program_dir_vroot; // $PROGDIR
+    static constexpr virtual_root_name program_dir_vroot = "$PGMDIR";
     static const virtual_root_name temp_dir_vroot;    // $TMP
-    static const virtual_root_name current_dir_vroot; // $CURDIR
+    static constexpr virtual_root_name temp_dir_vroot = "$TMPDIR";
+    static constexpr virtual_root_name current_dir_vroot = "$CURDIR";
+
+    [[deprecated("You should use program_dir_vroot (\"$PGMDIR\")!")]]
+    static constexpr virtual_root_name old_program_dir_vroot = "$PROGDIR";
+    [[deprecated("You should use temp_dir_vroot (\"$TMPDIR\")!")]]
+    static constexpr virtual_root_name old_temp_dir_vroot = "$TMP";
 
 public:
     virtual_filesystem();
@@ -42,10 +48,10 @@ public:
 
     struct path_components
     {
-        virtual_root_name vroot;
+        virtual_root_name virtual_root;
         path_string_view subpath;
 
-        inline operator bool() const noexcept { return vroot.not_empty(); }
+        inline operator bool() const noexcept { return virtual_root.not_empty(); }
     };
     path_components extract_components(path_string_view path);
     inline path_components extract_components(const std::filesystem::path& path);

@@ -1,15 +1,13 @@
 #include <arba/vlfs/vlfs.hpp>
+#include <arba/strn/io.hpp>
 #include <regex>
 #include <stdexcept>
+#include <iostream>
 
 inline namespace arba
 {
 namespace vlfs
 {
-
-const virtual_filesystem::virtual_root_name virtual_filesystem::program_dir_vroot("$PROGDIR");
-const virtual_filesystem::virtual_root_name virtual_filesystem::temp_dir_vroot("$TMP");
-const virtual_filesystem::virtual_root_name virtual_filesystem::current_dir_vroot("$CURDIR");
 
 bool virtual_filesystem::is_virtual_root_name_valid(virtual_root_name vroot)
 {
@@ -21,6 +19,7 @@ bool virtual_filesystem::is_virtual_root_name_valid(virtual_root_name vroot)
 virtual_filesystem::virtual_filesystem()
 {
     virtual_root_map_.emplace(temp_dir_vroot, std::filesystem::temp_directory_path());
+    virtual_root_map_.emplace(old_temp_dir_vroot, std::filesystem::temp_directory_path());  // TO REMOVE
 }
 
 void virtual_filesystem::set_virtual_root(virtual_root_name vroot, const std::filesystem::path& root_path)
@@ -39,6 +38,7 @@ void virtual_filesystem::set_program_dir_virtual_root(const std::filesystem::pat
 {
     if (auto iter = virtual_root_map_.find(program_dir_vroot); iter != virtual_root_map_.end()) [[unlikely]]
         throw std::runtime_error("Program directory virtual root is already set.");
+    virtual_root_map_.emplace(old_program_dir_vroot, root_path);  // TO REMOVE
     virtual_root_map_.emplace(program_dir_vroot, root_path);
 }
 
@@ -98,7 +98,7 @@ virtual_filesystem::path_components virtual_filesystem::extract_components(path_
     if (std::size_t pos; is_virtual_path_(path_view, pos))
     {
         auto path_begin = path_view.begin();
-        res.vroot = strn_from_iter_len(path_begin, pos);
+        res.virtual_root = strn_from_iter_len(path_begin, pos);
         auto subpath_begin_it = path_begin + pos + virtual_root_marker.length();
         std::size_t subpath_length = std::distance(subpath_begin_it, path_view.end());
         res.subpath = path_string_view(&*subpath_begin_it, subpath_length);
@@ -112,18 +112,30 @@ virtual_filesystem::path_components virtual_filesystem::extract_components(path_
 void virtual_filesystem::convert_to_real_path(std::filesystem::path& real_path)
 {
     path_string_view path(real_path.native());
-    if (auto path_comps = extract_components(path); path_comps)
+    if (path_components path_comps = extract_components(path); path_comps)
     {
         // if the root name is registered in the virtual filesystem,
         // we get it and convert it to real path:
-        if (auto vroot_iter = virtual_root_map_.find(path_comps.vroot);
+        if (auto vroot_iter = virtual_root_map_.find(path_comps.virtual_root);
             vroot_iter != virtual_root_map_.end()) [[likely]]
         {
-            std::filesystem::path vroot_path = vroot_iter->second;
-            convert_to_real_path(vroot_path);
-            real_path = vroot_path / path_comps.subpath;
+            if (path_comps.virtual_root == old_program_dir_vroot) [[unlikely]]  // THROW EXCEPTION // TO REMOVE
+            {
+                std::cerr << "WARNING: You are using a deprecated virtual root name: " << path_comps.virtual_root
+                          << ". You should use \"" << program_dir_vroot << "\" instead." << std::endl;
+            }
+            else if (path_comps.virtual_root == old_temp_dir_vroot) [[unlikely]]  // THROW EXCEPTION // TO REMOVE
+            {
+                std::cerr << "WARNING: You are using a deprecated virtual root name: " << path_comps.virtual_root
+                          << ". You should use \"" << temp_dir_vroot << "\" instead." << std::endl;
+            }
+
+            std::filesystem::path path = vroot_iter->second;
+            convert_to_real_path(path);
+            path /= path_comps.subpath;
+            real_path = std::move(path);
         }
-        else if (path_comps.vroot == current_dir_vroot) [[likely]]
+        else if (path_comps.virtual_root == current_dir_vroot) [[likely]]
         {
             real_path = std::filesystem::current_path() / path_comps.subpath;
         }
@@ -132,14 +144,14 @@ void virtual_filesystem::convert_to_real_path(std::filesystem::path& real_path)
 
 std::filesystem::path virtual_filesystem::real_path(const path_components& path_comps)
 {
-    if (auto vroot_iter = virtual_root_map_.find(path_comps.vroot);
+    if (auto vroot_iter = virtual_root_map_.find(path_comps.virtual_root);
         vroot_iter != virtual_root_map_.end()) [[likely]]
     {
         std::filesystem::path vroot_path = vroot_iter->second;
         convert_to_real_path(vroot_path);
         return vroot_path / path_comps.subpath;
     }
-    else if (path_comps.vroot == current_dir_vroot) [[likely]]
+    else if (path_comps.virtual_root == current_dir_vroot) [[likely]]
     {
         return std::filesystem::current_path() / path_comps.subpath;
     }
