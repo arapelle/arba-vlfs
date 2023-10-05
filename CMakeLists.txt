@@ -16,7 +16,7 @@ set_build_type_ifndef()
 set(PROJECT_NAME "arba-vlfs")
 set(project_namespace "arba")
 set(project_base_name "vlfs")
-set(PROJECT_VERSION 0.3.0)
+set(PROJECT_VERSION 0.4.0)
 project(${PROJECT_NAME}
         VERSION ${PROJECT_VERSION}
         DESCRIPTION "C++ tools to manipulate virtual filesystem paths."
@@ -55,7 +55,7 @@ add_cpp_library(
 
 ## Link C++ targets:
 if(NOT TARGET arba-strn)
-    find_package(arba-strn 0.2.0 REQUIRED CONFIG)
+    find_package(arba-strn 0.3.0 REQUIRED CONFIG)
 endif()
 cpp_library_link_libraries(
     SHARED ${PROJECT_NAME}
