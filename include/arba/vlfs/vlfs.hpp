@@ -37,8 +37,8 @@ public:
     void set_virtual_root(virtual_root_name vroot, const std::filesystem::path& root_path);
     void set_program_dir_virtual_root(const std::filesystem::path& program_dir_path);
 
-    bool is_virtual_path(path_string_view path);
-    inline bool is_virtual_path(const std::filesystem::path& path);
+    static bool is_virtual_path(path_string_view path);
+    inline static bool is_virtual_path(const std::filesystem::path& path);
 
     struct path_components
     {
@@ -67,7 +67,7 @@ public:
     static bool is_virtual_root_name_valid(virtual_root_name vroot);
 
 private:
-    bool is_virtual_path_(path_string_view path, std::size_t& pos);
+    static bool is_virtual_path_(path_string_view path, std::size_t& pos);
 
 private:
     virtual_root_map virtual_root_map_;
