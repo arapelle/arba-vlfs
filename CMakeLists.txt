@@ -55,7 +55,7 @@ add_cpp_library(
 
 ## Link C++ targets:
 if(NOT TARGET arba-strn)
-    find_package(arba-strn 0.2.0 REQUIRED CONFIG)
+    find_package(arba-strn 0.3.0 REQUIRED CONFIG)
 endif()
 cpp_library_link_libraries(
     SHARED ${PROJECT_NAME}
