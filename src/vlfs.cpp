@@ -40,6 +40,7 @@ void virtual_filesystem::set_program_dir_virtual_root(const std::filesystem::pat
         throw std::runtime_error("Program directory virtual root is already set.");
     virtual_root_map_.emplace(old_program_dir_vroot, root_path);  // TO REMOVE
     virtual_root_map_.emplace(program_dir_vroot, root_path);
+    virtual_root_map_.emplace(canonical_program_dir_vroot, std::filesystem::canonical(root_path));
 }
 
 bool virtual_filesystem::has_virtual_root(virtual_root_name vroot) const

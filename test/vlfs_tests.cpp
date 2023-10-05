@@ -77,10 +77,12 @@ TEST(vlfs_tests, convert_to_real_path__predefined_roots)
     ASSERT_TRUE(vfs.has_virtual_root(vlfs::virtual_filesystem::current_dir_vroot));
     ASSERT_TRUE(vfs.has_virtual_root(vlfs::virtual_filesystem::temp_dir_vroot));
     ASSERT_FALSE(vfs.has_virtual_root(vlfs::virtual_filesystem::program_dir_vroot));
+    ASSERT_FALSE(vfs.has_virtual_root(vlfs::virtual_filesystem::canonical_program_dir_vroot));
 
     ASSERT_EQ(vlfs::virtual_filesystem::current_dir_vroot, "$CURDIR"_s64);
     ASSERT_EQ(vlfs::virtual_filesystem::temp_dir_vroot, "$TMPDIR"_s64);
     ASSERT_EQ(vlfs::virtual_filesystem::program_dir_vroot, "$PGMDIR"_s64);
+    ASSERT_EQ(vlfs::virtual_filesystem::canonical_program_dir_vroot, "$CPGMDIR"_s64);
 
     std::filesystem::path path("$CURDIR:/file");
     vfs.convert_to_real_path(path);
@@ -94,6 +96,9 @@ TEST(vlfs_tests, convert_to_real_path__predefined_roots)
     vfs.convert_to_real_path(path);
     ASSERT_STREQ(path.generic_string().c_str(), "$PGMDIR:/file");
 
+    std::filesystem::path cpath = std::filesystem::path("$CPGMDIR:/file");
+    vfs.convert_to_real_path(cpath);
+    ASSERT_STREQ(cpath.generic_string().c_str(), "$CPGMDIR:/file");
 
     vfs.set_program_dir_virtual_root(program_dir);
     ASSERT_EQ(vfs.virtual_map().size(),
@@ -104,6 +109,10 @@ TEST(vlfs_tests, convert_to_real_path__predefined_roots)
     vfs.convert_to_real_path(path);
     std::string expected_path_string = (program_dir / "file").generic_string();
     ASSERT_STREQ(path.generic_string().c_str(), expected_path_string.c_str());
+
+    vfs.convert_to_real_path(cpath);
+    expected_path_string = (std::filesystem::canonical(program_dir) / "file").generic_string();
+    ASSERT_STREQ(cpath.generic_string().c_str(), expected_path_string.c_str());
 }
 
 TEST(vlfs_tests, convert_to_real_path__deprecated_predefined_roots)

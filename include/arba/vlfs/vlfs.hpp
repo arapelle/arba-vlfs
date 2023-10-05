@@ -26,7 +26,7 @@ public:
     static_assert(std::is_same_v<std::filesystem::path::value_type, char>);
 #endif
     static constexpr virtual_root_name program_dir_vroot = "$PGMDIR";
-    static const virtual_root_name temp_dir_vroot;    // $TMP
+    static constexpr virtual_root_name canonical_program_dir_vroot = "$CPGMDIR";
     static constexpr virtual_root_name temp_dir_vroot = "$TMPDIR";
     static constexpr virtual_root_name current_dir_vroot = "$CURDIR";
 
