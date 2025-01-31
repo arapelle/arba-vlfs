@@ -19,7 +19,7 @@ public:
     using virtual_root_map = std::unordered_map<virtual_root_name, std::filesystem::path>;
 
 public:
-#ifdef WIN32
+#ifdef _WIN32
     static constexpr path_string_view virtual_root_marker = L":/";
     static_assert(std::is_same_v<std::filesystem::path::value_type, wchar_t>);
 #else
