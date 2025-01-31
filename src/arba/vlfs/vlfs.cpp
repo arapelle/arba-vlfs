@@ -2,6 +2,7 @@
 
 #include <arba/strn/io.hpp>
 
+#include <format>
 #include <iostream>
 #include <regex>
 #include <stdexcept>
@@ -20,7 +21,6 @@ bool virtual_filesystem::is_virtual_root_name_valid(virtual_root_name vroot)
 virtual_filesystem::virtual_filesystem()
 {
     virtual_root_map_.emplace(temp_dir_vroot, std::filesystem::temp_directory_path());
-    virtual_root_map_.emplace(old_temp_dir_vroot, std::filesystem::temp_directory_path()); // TO REMOVE
 }
 
 void virtual_filesystem::set_virtual_root(virtual_root_name vroot, const std::filesystem::path& root_path)
@@ -123,15 +123,12 @@ void virtual_filesystem::convert_to_real_path(std::filesystem::path& real_path)
         if (auto vroot_iter = virtual_root_map_.find(path_comps.virtual_root); vroot_iter != virtual_root_map_.end())
             [[likely]]
         {
-            if (path_comps.virtual_root == old_program_dir_vroot) [[unlikely]] // THROW EXCEPTION // TO REMOVE
+            if (path_comps.virtual_root == old_program_dir_vroot) [[unlikely]] // TO REMOVE
             {
-                std::cerr << "WARNING: You are using a deprecated virtual root name: " << path_comps.virtual_root
-                          << ". You should use \"" << program_dir_vroot << "\" instead." << std::endl;
-            }
-            else if (path_comps.virtual_root == old_temp_dir_vroot) [[unlikely]] // THROW EXCEPTION // TO REMOVE
-            {
-                std::cerr << "WARNING: You are using a deprecated virtual root name: " << path_comps.virtual_root
-                          << ". You should use \"" << temp_dir_vroot << "\" instead." << std::endl;
+                const std::string error_msg =
+                    std::format("You are using a deprecated virtual root name: {}. You should use \"{}\" instead.",
+                                path_comps.virtual_root, program_dir_vroot);
+                throw std::runtime_error(error_msg);
             }
 
             std::filesystem::path path = vroot_iter->second;

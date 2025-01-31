@@ -28,14 +28,12 @@ public:
 #endif
     static constexpr virtual_root_name program_dir_vroot = "$PGMDIR";
     static constexpr virtual_root_name canonical_program_dir_vroot = "$CPGMDIR";
-    static constexpr virtual_root_name temp_dir_vroot = "$TMPDIR";
+    static constexpr virtual_root_name temp_dir_vroot = "$TMP";
     static constexpr virtual_root_name current_dir_vroot = "$CURDIR";
 
     // clang-format off
     [[deprecated("You should use program_dir_vroot (\"$PGMDIR\")!")]]
     static constexpr virtual_root_name old_program_dir_vroot = "$PROGDIR";
-    [[deprecated("You should use temp_dir_vroot (\"$TMPDIR\")!")]]
-    static constexpr virtual_root_name old_temp_dir_vroot = "$TMP";
     // clang-format on
 
 public:

@@ -19,7 +19,7 @@ TEST(vlfs_tests, test_virtual_root_marker)
 TEST(vlfs_tests, test_constructor_empty)
 {
     vlfs::virtual_filesystem vfs;
-    ASSERT_EQ(vfs.virtual_map().size(), 1 + vlfs::virtual_filesystem::old_temp_dir_vroot.not_empty());
+    ASSERT_EQ(vfs.virtual_map().size(), 1);
 }
 
 TEST(vlfs_tests, is_virtual_root_name_valid)
@@ -66,7 +66,7 @@ TEST(vlfs_tests, convert_to_real_path)
     vfs.set_virtual_root("VROOT"_s64, "/tmp");
     vfs.set_virtual_root("RSC"_s64, "VROOT:/rsc");
     vfs.set_virtual_root("IMAGES"_s64, "RSC:/images");
-    ASSERT_EQ(vfs.virtual_map().size(), 4 + vlfs::virtual_filesystem::old_temp_dir_vroot.not_empty());
+    ASSERT_EQ(vfs.virtual_map().size(), 4);
     ASSERT_TRUE(vfs.has_virtual_root("VROOT"_s64));
     ASSERT_FALSE(vfs.has_virtual_root("VOID"_s64));
 
@@ -88,7 +88,7 @@ TEST(vlfs_tests, convert_to_real_path__predefined_roots)
     ASSERT_FALSE(vfs.has_virtual_root(vlfs::virtual_filesystem::canonical_program_dir_vroot));
 
     ASSERT_EQ(vlfs::virtual_filesystem::current_dir_vroot, "$CURDIR"_s64);
-    ASSERT_EQ(vlfs::virtual_filesystem::temp_dir_vroot, "$TMPDIR"_s64);
+    ASSERT_EQ(vlfs::virtual_filesystem::temp_dir_vroot, "$TMP"_s64);
     ASSERT_EQ(vlfs::virtual_filesystem::program_dir_vroot, "$PGMDIR"_s64);
     ASSERT_EQ(vlfs::virtual_filesystem::canonical_program_dir_vroot, "$CPGMDIR"_s64);
 
@@ -98,7 +98,7 @@ TEST(vlfs_tests, convert_to_real_path__predefined_roots)
 
     path = std::filesystem::path("$TMPDIR:/file");
     vfs.convert_to_real_path(path);
-    ASSERT_STRNE(path.generic_string().c_str(), "$TMPDIR:/file");
+    ASSERT_STRNE(path.generic_string().c_str(), "$TMP:/file");
 
     path = std::filesystem::path("$PGMDIR:/file");
     vfs.convert_to_real_path(path);
@@ -109,8 +109,7 @@ TEST(vlfs_tests, convert_to_real_path__predefined_roots)
     ASSERT_STREQ(cpath.generic_string().c_str(), "$CPGMDIR:/file");
 
     vfs.set_program_dir_virtual_root(program_dir);
-    ASSERT_EQ(vfs.virtual_map().size(), 3 + vlfs::virtual_filesystem::old_temp_dir_vroot.not_empty()
-                                            + vlfs::virtual_filesystem::old_program_dir_vroot.not_empty());
+    ASSERT_EQ(vfs.virtual_map().size(), 3 + vlfs::virtual_filesystem::old_program_dir_vroot.not_empty());
     ASSERT_TRUE(vfs.has_virtual_root(vlfs::virtual_filesystem::program_dir_vroot));
 
     vfs.convert_to_real_path(path);
@@ -125,23 +124,16 @@ TEST(vlfs_tests, convert_to_real_path__predefined_roots)
 TEST(vlfs_tests, convert_to_real_path__deprecated_predefined_roots)
 {
     vlfs::virtual_filesystem vfs;
-    ASSERT_TRUE(vfs.has_virtual_root(vlfs::virtual_filesystem::old_temp_dir_vroot));
     ASSERT_FALSE(vfs.has_virtual_root(vlfs::virtual_filesystem::old_program_dir_vroot));
 
-    std::filesystem::path path = std::filesystem::path("$TMP:/file");
-    vfs.convert_to_real_path(path);
-    ASSERT_STRNE(path.generic_string().c_str(), "$TMP:/file");
-
-    path = std::filesystem::path("$PROGDIR:/file");
+    std::filesystem::path path = std::filesystem::path("$PROGDIR:/file");
     vfs.convert_to_real_path(path);
     ASSERT_STREQ(path.generic_string().c_str(), "$PROGDIR:/file");
 
     vfs.set_program_dir_virtual_root(program_dir);
     ASSERT_TRUE(vfs.has_virtual_root(vlfs::virtual_filesystem::old_program_dir_vroot));
 
-    vfs.convert_to_real_path(path);
-    std::string expected_path_string = (program_dir / "file").generic_string();
-    ASSERT_STREQ(path.generic_string().c_str(), expected_path_string.c_str());
+    ASSERT_THROW(vfs.convert_to_real_path(path), std::runtime_error);
 }
 
 TEST(vlfs_tests, real_path)
