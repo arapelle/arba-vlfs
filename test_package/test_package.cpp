@@ -1,6 +1,7 @@
-#include <iostream>
-#include <arba/vlfs/version.hpp>
 #include <arba/vlfs/vlfs.hpp>
+#include <arba/vlfs/version.hpp>
+
+#include <iostream>
 
 using namespace strn::literals;
 
@@ -15,5 +16,6 @@ int main()
     vfs.convert_to_real_path(path);
     std::cout << path << std::endl;
 
+    std::cout << "TEST PACKAGE SUCCESS" << std::endl;
     return EXIT_SUCCESS;
 }
