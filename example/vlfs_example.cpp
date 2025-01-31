@@ -1,5 +1,7 @@
-#include <iostream>
 #include <arba/vlfs/vlfs.hpp>
+#include <arba/vlfs/version.hpp>
+
+#include <iostream>
 
 using namespace strn::literals;
 
