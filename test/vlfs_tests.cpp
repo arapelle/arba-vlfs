@@ -1,5 +1,7 @@
 #include <arba/vlfs/vlfs.hpp>
+
 #include <gtest/gtest.h>
+
 #include <cstdlib>
 
 using namespace std::string_view_literals;
@@ -40,10 +42,10 @@ TEST(vlfs_tests, is_virtual_path__long_path)
     ASSERT_TRUE(vfs.is_virtual_path("RSC:/dir/file.txt"sv));
     ASSERT_TRUE(vfs.is_virtual_path("RSCS_DIR:/file.txt"sv));
     ASSERT_FALSE(vfs.is_virtual_path("RESOURCES:/dir/file.txt"sv)); // too long virtual root name
-    ASSERT_FALSE(vfs.is_virtual_path("RSC:|dir/file.txt"sv)); // wrong virtual root marker
-    ASSERT_FALSE(vfs.is_virtual_path(":/dir/file.txt"sv)); // empty virtual root name
-    ASSERT_FALSE(vfs.is_virtual_path("R:/dir/file.txt"sv)); // too short virtual root name
-    ASSERT_FALSE(vfs.is_virtual_path("dir/file.txt"sv)); // does not have a virtual root name
+    ASSERT_FALSE(vfs.is_virtual_path("RSC:|dir/file.txt"sv));       // wrong virtual root marker
+    ASSERT_FALSE(vfs.is_virtual_path(":/dir/file.txt"sv));          // empty virtual root name
+    ASSERT_FALSE(vfs.is_virtual_path("R:/dir/file.txt"sv));         // too short virtual root name
+    ASSERT_FALSE(vfs.is_virtual_path("dir/file.txt"sv));            // does not have a virtual root name
 }
 
 TEST(vlfs_tests, is_virtual_path__short_path)
@@ -52,17 +54,17 @@ TEST(vlfs_tests, is_virtual_path__short_path)
     ASSERT_TRUE(vfs.is_virtual_path("RD:/"sv));
     ASSERT_TRUE(vfs.is_virtual_path("RSC:/f"sv));
     ASSERT_TRUE(vfs.is_virtual_path("RSCS_DIR:/"sv));
-    ASSERT_FALSE(vfs.is_virtual_path("RSC:|f"sv)); // wrong virtual root marker
-    ASSERT_FALSE(vfs.is_virtual_path(":/f.txt"sv)); // empty virtual root name
+    ASSERT_FALSE(vfs.is_virtual_path("RSC:|f"sv));   // wrong virtual root marker
+    ASSERT_FALSE(vfs.is_virtual_path(":/f.txt"sv));  // empty virtual root name
     ASSERT_FALSE(vfs.is_virtual_path("R:/f.txt"sv)); // too short virtual root name
-    ASSERT_FALSE(vfs.is_virtual_path("f.txt"sv)); // does not have a virtual root name
+    ASSERT_FALSE(vfs.is_virtual_path("f.txt"sv));    // does not have a virtual root name
 }
 
 TEST(vlfs_tests, convert_to_real_path)
 {
     vlfs::virtual_filesystem vfs;
-    vfs.set_virtual_root("VROOT"_s64,  "/tmp");
-    vfs.set_virtual_root("RSC"_s64,    "VROOT:/rsc");
+    vfs.set_virtual_root("VROOT"_s64, "/tmp");
+    vfs.set_virtual_root("RSC"_s64, "VROOT:/rsc");
     vfs.set_virtual_root("IMAGES"_s64, "RSC:/images");
     ASSERT_EQ(vfs.virtual_map().size(), 4 + vlfs::virtual_filesystem::old_temp_dir_vroot.not_empty());
     ASSERT_TRUE(vfs.has_virtual_root("VROOT"_s64));
@@ -72,7 +74,7 @@ TEST(vlfs_tests, convert_to_real_path)
     vfs.convert_to_real_path(path);
     ASSERT_EQ(path, "/tmp/rsc/images/file");
 
-    path = std::filesystem::path ("VIDEOS:/file");
+    path = std::filesystem::path("VIDEOS:/file");
     vfs.convert_to_real_path(path);
     ASSERT_EQ(path, "VIDEOS:/file");
 }
@@ -107,9 +109,8 @@ TEST(vlfs_tests, convert_to_real_path__predefined_roots)
     ASSERT_STREQ(cpath.generic_string().c_str(), "$CPGMDIR:/file");
 
     vfs.set_program_dir_virtual_root(program_dir);
-    ASSERT_EQ(vfs.virtual_map().size(),
-              3 + vlfs::virtual_filesystem::old_temp_dir_vroot.not_empty()
-                  + vlfs::virtual_filesystem::old_program_dir_vroot.not_empty());
+    ASSERT_EQ(vfs.virtual_map().size(), 3 + vlfs::virtual_filesystem::old_temp_dir_vroot.not_empty()
+                                            + vlfs::virtual_filesystem::old_program_dir_vroot.not_empty());
     ASSERT_TRUE(vfs.has_virtual_root(vlfs::virtual_filesystem::program_dir_vroot));
 
     vfs.convert_to_real_path(path);
@@ -168,8 +169,8 @@ TEST(vlfs_tests, extract_components)
 TEST(vlfs_tests, real_path__path_components)
 {
     vlfs::virtual_filesystem vfs;
-    vfs.set_virtual_root("VROOT"_s64,  "/tmp");
-    vfs.set_virtual_root("RSC"_s64,    "VROOT:/rsc");
+    vfs.set_virtual_root("VROOT"_s64, "/tmp");
+    vfs.set_virtual_root("RSC"_s64, "VROOT:/rsc");
     vfs.set_virtual_root("IMAGES"_s64, "RSC:/images");
 
     std::filesystem::path vpath("IMAGES:/file");
@@ -178,7 +179,7 @@ TEST(vlfs_tests, real_path__path_components)
     ASSERT_EQ(path, "/tmp/rsc/images/file");
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     program_dir = std::filesystem::canonical(*argv).parent_path();
     ::testing::InitGoogleTest(&argc, argv);
