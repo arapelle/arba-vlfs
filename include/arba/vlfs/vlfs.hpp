@@ -1,6 +1,7 @@
 #pragma once
 
 #include <arba/strn/string64.hpp>
+
 #include <filesystem>
 #include <string_view>
 
@@ -18,7 +19,7 @@ public:
     using virtual_root_map = std::unordered_map<virtual_root_name, std::filesystem::path>;
 
 public:
-#ifdef WIN32
+#ifdef _WIN32
     static constexpr path_string_view virtual_root_marker = L":/";
     static_assert(std::is_same_v<std::filesystem::path::value_type, wchar_t>);
 #else
@@ -27,13 +28,13 @@ public:
 #endif
     static constexpr virtual_root_name program_dir_vroot = "$PGMDIR";
     static constexpr virtual_root_name canonical_program_dir_vroot = "$CPGMDIR";
-    static constexpr virtual_root_name temp_dir_vroot = "$TMPDIR";
+    static constexpr virtual_root_name temp_dir_vroot = "$TMP";
     static constexpr virtual_root_name current_dir_vroot = "$CURDIR";
 
+    // clang-format off
     [[deprecated("You should use program_dir_vroot (\"$PGMDIR\")!")]]
     static constexpr virtual_root_name old_program_dir_vroot = "$PROGDIR";
-    [[deprecated("You should use temp_dir_vroot (\"$TMPDIR\")!")]]
-    static constexpr virtual_root_name old_temp_dir_vroot = "$TMP";
+    // clang-format on
 
 public:
     virtual_filesystem();
@@ -109,5 +110,5 @@ inline std::filesystem::path virtual_filesystem::real_path(std::filesystem::path
     return real_path;
 }
 
-}
-}
+} // namespace vlfs
+} // namespace arba
