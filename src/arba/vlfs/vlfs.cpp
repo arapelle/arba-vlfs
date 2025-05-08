@@ -115,8 +115,8 @@ virtual_filesystem::path_components virtual_filesystem::extract_components(path_
 
 void virtual_filesystem::convert_to_real_path(std::filesystem::path& real_path)
 {
-    path_string_view path(real_path.native());
-    if (path_components path_comps = extract_components(path); path_comps)
+    path_string_view path_sv(real_path.native());
+    if (path_components path_comps = extract_components(path_sv); path_comps)
     {
         // if the root name is registered in the virtual filesystem,
         // we get it and convert it to real path:
