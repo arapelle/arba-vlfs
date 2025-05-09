@@ -31,11 +31,6 @@ public:
     static constexpr virtual_root_name temp_dir_vroot = "$TMP";
     static constexpr virtual_root_name current_dir_vroot = "$CURDIR";
 
-    // clang-format off
-    [[deprecated("You should use program_dir_vroot (\"$PGMDIR\")!")]]
-    static constexpr virtual_root_name old_program_dir_vroot = "$PROGDIR";
-    // clang-format on
-
 public:
     virtual_filesystem();
 
