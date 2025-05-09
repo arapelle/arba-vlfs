@@ -39,7 +39,6 @@ void virtual_filesystem::set_program_dir_virtual_root(const std::filesystem::pat
 {
     if (auto iter = virtual_root_map_.find(program_dir_vroot); iter != virtual_root_map_.end()) [[unlikely]]
         throw std::runtime_error("Program directory virtual root is already set.");
-    virtual_root_map_.emplace(old_program_dir_vroot, root_path); // TO REMOVE
     virtual_root_map_.emplace(program_dir_vroot, root_path);
     virtual_root_map_.emplace(canonical_program_dir_vroot, std::filesystem::canonical(root_path));
 }
@@ -115,22 +114,14 @@ virtual_filesystem::path_components virtual_filesystem::extract_components(path_
 
 void virtual_filesystem::convert_to_real_path(std::filesystem::path& real_path)
 {
-    path_string_view path(real_path.native());
-    if (path_components path_comps = extract_components(path); path_comps)
+    path_string_view path_sv(real_path.native());
+    if (path_components path_comps = extract_components(path_sv); path_comps)
     {
         // if the root name is registered in the virtual filesystem,
         // we get it and convert it to real path:
         if (auto vroot_iter = virtual_root_map_.find(path_comps.virtual_root); vroot_iter != virtual_root_map_.end())
             [[likely]]
         {
-            if (path_comps.virtual_root == old_program_dir_vroot) [[unlikely]] // TO REMOVE
-            {
-                const std::string error_msg =
-                    std::format("You are using a deprecated virtual root name: {}. You should use \"{}\" instead.",
-                                path_comps.virtual_root, program_dir_vroot);
-                throw std::runtime_error(error_msg);
-            }
-
             std::filesystem::path path = vroot_iter->second;
             convert_to_real_path(path);
             path /= path_comps.subpath;
